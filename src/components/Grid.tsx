@@ -3,10 +3,11 @@ import p5 from 'p5';
 import { generateSudokuBoard, isValidMove } from '../lib/Grid';
 
 interface SudokuGridProps {
+  className: string;
   onCellUpdate: (isValid: boolean) => void;
 }
 
-const SudokuGrid = ({ onCellUpdate }: SudokuGridProps) => {
+const SudokuGrid = ({ onCellUpdate, ...rest }: SudokuGridProps) => {
   let gridSize = 60;
   let selectedRow = -1;
   let selectedCol = -1;
@@ -16,7 +17,8 @@ const SudokuGrid = ({ onCellUpdate }: SudokuGridProps) => {
   useEffect(() => {
     const sketch = (p: any) => {
       p.setup = () => {
-        p.createCanvas(540, 540);
+        const canvas = p.createCanvas(540, 540);
+        canvas.parent('sudoku-canvas');
       };
 
       p.drawSudokuGrid = () => {
@@ -116,7 +118,7 @@ const SudokuGrid = ({ onCellUpdate }: SudokuGridProps) => {
     new p5(sketch);
   }, []);
 
-  return <div id="sudoku-canvas"></div>;
+  return <div id="sudoku-canvas" {...rest}></div>;
 };
 
 export default SudokuGrid;
