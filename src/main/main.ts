@@ -14,6 +14,11 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import {
+  loadGameStateFromFile,
+  saveGameState,
+  saveGameStateToFile,
+} from './storage';
 
 class AppUpdater {
   constructor() {
@@ -29,6 +34,24 @@ ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   console.log(msgTemplate(arg));
   event.reply('ipc-example', msgTemplate('pong'));
+});
+
+ipcMain.on('load-game-state', async (event, arg) => {
+  console.log('IPC::load-game-state');
+  const res = loadGameStateFromFile();
+
+  console.log('IPC::load-game-state::gameState', res);
+  event.reply('load-game-state', res);
+});
+
+ipcMain.on('save-game-state', async (event, arg) => {
+  console.log('IPC::saveGameState', { event, arg });
+  if (arg.current) {
+    console.log('Might be game data..');
+    // TODO Validate game data
+  }
+  saveGameStateToFile(arg);
+  event.reply('saveGameState', 'Game Saved');
 });
 
 if (process.env.NODE_ENV === 'production') {
