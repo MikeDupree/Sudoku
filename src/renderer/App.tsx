@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
+import '@radix-ui/themes/styles.css';
+import { Theme } from '@radix-ui/themes';
+
 import './App.css';
 import '../styles/output.css';
 import SudokuGrid from '../components/Grid';
+import MenuBar from '../components/MenuBar';
 import { GameState, saveGameStateToFile } from '../main/storage';
 
 function Sudoku() {
@@ -32,22 +36,28 @@ function Sudoku() {
       window.electron.ipcRenderer.sendMessage('save-game-state', gameState);
   }, [gameState]);
 
+  if (!gameState?.current) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="flex flex-row">
-        <button onClick={console.log}>New Game</button>
+    <Theme>
+      <div className="flex flex-col items-center justify-center">
+        <div className="flex flex-row w-full">
+          <MenuBar isLoggedIn={false} username={''} />
+        </div>
+        <div>
+          <SudokuGrid
+            className="mx-auto"
+            existingState={gameState.current}
+            onGameStateUpdate={(state) => {
+              console.debug('onGameStateUpdate', state);
+              setGameState(state);
+            }}
+          />
+        </div>
       </div>
-      <div>
-        <SudokuGrid
-          className="mx-auto"
-          existingState={gameState.current}
-          onGameStateUpdate={(state) => {
-            console.debug('onGameStateUpdate', state);
-            setGameState(state);
-          }}
-        />
-      </div>
-    </div>
+    </Theme>
   );
 }
 

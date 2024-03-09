@@ -14,11 +14,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import {
-  loadGameStateFromFile,
-  saveGameState,
-  saveGameStateToFile,
-} from './storage';
+import { loadGameStateFromFile, saveGameStateToFile } from './storage';
 
 class AppUpdater {
   constructor() {
@@ -39,6 +35,20 @@ ipcMain.on('ipc-example', async (event, arg) => {
 ipcMain.on('load-game-state', async (event, arg) => {
   console.log('IPC::load-game-state');
   const res = loadGameStateFromFile();
+
+  console.log('IPC::load-game-state::gameState', res);
+  event.reply('load-game-state', res);
+});
+
+ipcMain.on('new-game-state', async (event, arg) => {
+  console.log('IPC::new-game-state');
+  // Reset game
+
+  const res = {
+    mistakes: 0,
+    current: [],
+    initial: [],
+  };
 
   console.log('IPC::load-game-state::gameState', res);
   event.reply('load-game-state', res);

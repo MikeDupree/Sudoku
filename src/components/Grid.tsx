@@ -5,8 +5,7 @@ import { error } from 'console';
 
 interface SudokuGridProps {
   className?: string;
-  onCellUpdate?: (isValid: boolean) => void;
-  onGameStateUpdate?: (isValid: boolean) => void;
+  onGameStateUpdate?: (state: GameState) => void;
 }
 
 function SudokuGrid(props: SudokuGridProps) {
@@ -14,7 +13,7 @@ function SudokuGrid(props: SudokuGridProps) {
   const [sudokuGrid, setSudokuGrid] = useState();
   const [startingGrid, setStartingGrid] = useState();
   const [errors, setErrors] = useState(0);
-  const { onGameStateUpdate, onCellUpdate, className } = props;
+  const { onGameStateUpdate, className } = props;
   const gridSize = 60;
   const selectedRowRef = useRef<number>(-1);
   const selectedColRef = useRef<number>(-1);
@@ -26,6 +25,25 @@ function SudokuGrid(props: SudokuGridProps) {
 
   window.electron.ipcRenderer.once('load-game-state', (arg) => {
     if (arg.ok) {
+      setSudokuGrid(arg.data.current);
+      setStartingGrid(arg.data.initial);
+      setErrors(arg.data.mistakes);
+    } else {
+      const startGrid = generateSudokuBoard();
+      setSudokuGrid(startGrid);
+      setStartingGrid(startGrid.slice().map((row) => row.slice()));
+    }
+  });
+
+  function handleNewGame() {
+    console.warn("New Game onClick isn't handled...");
+
+    window.electron.ipcRenderer.sendMessage('new-game-state');
+  }
+
+  window.electron.ipcRenderer.once('load-game-state', (arg: unknown) => {
+    console.log('ipcRenderer::load-game-state::arg', arg);
+    if (arg?.ok) {
       setSudokuGrid(arg.data.current);
       setStartingGrid(arg.data.initial);
       setErrors(arg.data.mistakes);
@@ -165,7 +183,18 @@ function SudokuGrid(props: SudokuGridProps) {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="text-orange-300 m-4">Errors: {errors}</div>
+      <div className="flex flex-row justify-between w-full">
+        <div className="text-white m-4">Errors: {errors}</div>
+        <div className="text-white m-4">
+          <button
+            className="hover:text-green-300"
+            type="button"
+            onClick={handleNewGame}
+          >
+            New Game
+          </button>
+        </div>
+      </div>
       <div className="m-4">
         <div id="sudoku-canvas" className={className} />
       </div>
